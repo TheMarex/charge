@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset='utf-8' />
+    <script src='https://api.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+          body { margin:0; padding:0; }
+          #map { position:absolute; top:0; bottom:0; width:100%; }
+          #sidebar {
+              position:absolute;
+              top: 0;
+              right: 0;
+              width: 20%;
+              min-height: 20%;
+              background-color: rgba(0.3, 0.0, 0.0, 0.8);
+              z-index: 1;
+              color: #999;
+              padding: 40px;
+              margin: 10px;
+              font-family: "mono";
+          }
+          .hidden {display: none;}
+    </style>
+  </head>
+<body>
+<div id='map'></div>
+<div id='sidebar' class='hidden'></div>
+<script src='bundle.js'></script>
+</body>
+</html>
