@@ -15,22 +15,22 @@ int main(int argc, char **argv) {
         std::cout << argv[0] << " PATH_TO_NETWORK PATH_TO_PHEM_MODEL PATH_TO_SRTM OUTPUT_PATH"
                   << std::endl;
         std::cout << "Example: " << argv[0]
-                  << " data/berlin.osm.pbf data/phem data/srtm cache/luxev" << std::endl;
+                  << " data/berlin.osm.pbf data/srtm cache/luxev" << std::endl;
         return EXIT_FAILURE;
     }
 
     const std::string network_base_path = argv[1];
-    const std::string phem_base_path = argv[2];
-    const std::string srtm_base_path = argv[3];
-    const std::string output_base_path = argv[4];
+    const std::string srtm_base_path = argv[2];
+    const std::string output_base_path = argv[3];
 
     charge::common::TimedLogger time_read("Reading network from");
     auto network = charge::preprocessing::read_network(network_base_path);
     time_read.finished();
 
     charge::common::TimedLogger time_srtm("Annotating SRTM elevation");
-    charge::preprocessing::annotate_elevation(srtm_base_path, network);
+    auto [data_count, no_data_count] = charge::preprocessing::annotate_elevation(srtm_base_path, network);
     time_srtm.finished();
+    std::cerr << "Found elevation data for " << (100.0 * data_count)/(data_count + no_data_count) << "% of entries." << std::endl;
 
     charge::common::TimedLogger time_simplify("Simplify OSM data");
     auto nodes_before = network.nodes.size();
@@ -39,8 +39,8 @@ int main(int argc, char **argv) {
     time_simplify.finished();
     std::cerr << "Removed " << (nodes_before - nodes_after) << "(" << ((nodes_before - nodes_after) / (double)nodes_before * 100) << "%) nodes." << std::endl;
 
-    charge::common::TimedLogger time_phem("Importing PHEM model");
-    auto models = charge::ev::import_phem_consumption_models(phem_base_path);
+    charge::common::TimedLogger time_phem("Creating consumption model");
+    auto models = charge::ev::make_phem_consumption_models();
     time_phem.finished();
 
     charge::common::TimedLogger time_convert("Converting to graph");

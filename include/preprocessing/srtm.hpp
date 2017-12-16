@@ -10,6 +10,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <atomic>
 
 #include <sys/stat.h>
 
@@ -125,13 +126,23 @@ struct ElevationTiles {
                                  [=](const auto &tile) { return tile.contains(coordinate); });
 
         if (iter == tiles.end())
+        {
+            no_data_count++;
             return default_value;
+        }
         else
+        {
+            data_count++;
             return iter->interpolate(coordinate);
+        }
     }
 
     double default_value;
     std::vector<detail::Tile> tiles;
+
+    mutable std::uint32_t no_data_count = 0;
+    mutable std::uint32_t data_count = 0;
+
 };
 
 inline auto read_srtm(const std::string &base_path, common::Coordinate sw, common::Coordinate ne) {

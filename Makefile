@@ -39,10 +39,8 @@ $(info *** POTENTIAL is [${POTENTIAL}])
 $(info **********************************)
 
 DATA_BASE=$(DATA_DIR)/graphs/$(DATASET)
-PHEM_BASE=$(DATA_DIR)/phem/PHEMData
 SRTM_BASE=$(DATA_DIR)/srtm
 RESULTS_BASE=$(RESULTS_DIR)/$(HOST)/$(GRAPH_PROVIDER)_$(CHARGING_PROVIDER)/$(DATASET)/$(GRAPH_TYPE)
-EV_NETWORK=$(DATA_BASE).rgr $(DATA_BASE).rct $(DATA_BASE).vmd $(DATA_BASE).emd
 OSM_NETWORK=$(DATA_BASE).osm.pbf
 CACHE_BASE=$(CACHE_DIR)/$(GRAPH_PROVIDER)_$(CHARGING_PROVIDER)/$(DATASET)/$(GRAPH_TYPE)
 BASE_GRAPH=$(CACHE_BASE)/first_out $(CACHE_BASE)/head $(CACHE_BASE)/weight $(CACHE_BASE)/coordinates
@@ -72,9 +70,12 @@ max_turn_graph: $(EXPANDED_CACHE_BASE)/max/first_out $(EXPANDED_CACHE_BASE)/max/
 avg_consumption_turn_graph: $(EXPANDED_CACHE_BASE)/avg_consumption/first_out $(EXPANDED_CACHE_BASE)/avg_consumption/charger
 avg_consumption_static_turn_graph: $(EXPANDED_CACHE_BASE)/avg_consumption_static/first_out $(EXPANDED_CACHE_BASE)/avg_consumption_static/charger
 
+$(DATA_DIR)/tesla_charger.geojson:
+	./scripts/tesla_download.py > $@
+
 $(UNEXPANDED_OSM_BASE_GRAPH): $(BUILD_DIR)/osm2graph
 	mkdir -p $(UNEXPANDED_OSM_CACHE_BASE)
-	$(PREFIX_CMD) $(BUILD_DIR)/osm2graph $(DATA_BASE) $(PHEM_BASE) $(SRTM_BASE) $(UNEXPANDED_OSM_CACHE_BASE)
+	$(PREFIX_CMD) $(BUILD_DIR)/osm2graph $(DATA_BASE) $(SRTM_BASE) $(UNEXPANDED_OSM_CACHE_BASE)
 
 $(UNEXPANDED_TESLA_CACHE_BASE)/charger: $(DATA_DIR)/tesla_charger.geojson $(UNEXPANDED_BASE_GRAPH)
 	mkdir -p $(UNEXPANDED_TESLA_CACHE_BASE)

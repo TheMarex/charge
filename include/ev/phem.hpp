@@ -114,7 +114,7 @@ std::unique_ptr<ConsumptionModel> make_consumption_model(PHEMVehicleType type) {
 }
 
 std::unordered_map<std::string, std::unique_ptr<ConsumptionModel>>
-import_phem_consumption_models(const std::string &base_path) {
+make_phem_consumption_models() {
     std::unordered_map<std::string, std::unique_ptr<ConsumptionModel>> models;
 
     models["Peugeot Ion"] =

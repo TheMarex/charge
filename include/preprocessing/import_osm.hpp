@@ -281,7 +281,7 @@ inline OSMNetwork read_network(const std::string &base_path) {
     return network;
 }
 
-inline void annotate_elevation(const std::string &base_path, OSMNetwork &network) {
+inline auto annotate_elevation(const std::string &base_path, OSMNetwork &network) {
     common::Coordinate sw;
     common::Coordinate ne;
 
@@ -296,6 +296,8 @@ inline void annotate_elevation(const std::string &base_path, OSMNetwork &network
 
     for (auto &data : network.nodes)
         data.height = elevation_data.interpolate(data.coordinate);
+
+    return std::make_tuple(elevation_data.data_count, elevation_data.no_data_count);
 }
 
 // Removes excessive degree 2 nodes where possible
