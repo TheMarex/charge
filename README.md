@@ -36,17 +36,35 @@ We accept charging stations as GeoJSON file with feasures of the following forma
 ```
 
 Where rate needs to be the charging rate in watt.
+We provide a script `scripts/download_tesla.py` that can be used to download Tesla charging station data from their website.
 
 ### Elevation data
 
 You can use `./scripts/srtm_download.py` to download SRTM elevation data tiles from OpenTopo and place them in `data/srtm`.
 
+```
+mkdir -p data/srtm
+# Download SRTM tiles for switzerland
+./scripts/srtm_download.py 5,45,11,48 ./data/srtm
+```
+
 ## Run
 
+Make sure you placed your dataset in `data/graphs/${DATASET}.osm.pbf` and the SRTM tiles in `data/srtm`.
 Prepare data and start the server using:
 
 ```
-make run
+DATASET=${DATASET} make run
+```
+
+For example to setup OSM switzerland from Geofabrik do:
+
+```
+mkdir -p data/graphs
+wget http://download.geofabrik.de/europe/switzerland-latest.osm.pbf -O data/graphs/switzerland.osm.pbf
+mkdir -p data/srtm
+./scripts/srtm_download.py 5,45,11,48 ./data/srtm
+DATASET=switzerland make run
 ```
 
 ### Frontend
