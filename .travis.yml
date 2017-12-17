@@ -1,20 +1,31 @@
 language: cpp
 
 matrix:
+  include:
     - os: linux
+      compiler: 'clang-5.0-debug'
       addons:
         apt:
           sources:
             - llvm-toolchain-trusty-5.0
           packages:
             - clang-5.0
-      env:
-        - MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+      env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Debug
+    - os: linux
+      compiler: 'clang-5.0-release'
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - clang-5.0
+      env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Release
 
 install:
+    - export CC=${CCOMPILER} CXX=${CXXCOMPILER}
     - mkdir -p build
     - pushd build
-    - cmake ..
+    - cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     - cmake --build .
     - popd
 
