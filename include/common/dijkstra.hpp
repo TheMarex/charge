@@ -409,7 +409,7 @@ auto dijkstra(
 template <typename GraphT>
 auto dijkstra_to_all(typename GraphT::node_id_t start, const GraphT &graph, MinIDQueue &queue,
                      CostVector<GraphT> &costs) {
-    dijkstra_to_all(start, graph, queue, costs, [](...) { return false; });
+    dijkstra_to_all(start, graph, queue, costs, [](const auto&) { return false; });
 }
 
 template <typename GraphT>
