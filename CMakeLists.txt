@@ -6,7 +6,7 @@ option(ENABLE_STATISTICS "Enable debug statistics such as heap operation counts"
 option(ENABLE_MEMORY_STATISTICS "Enable debug memory statistics such as label usage" OFF)
 option(ENABLE_CCACHE "Speed up incremental rebuilds via ccache" ON)
 option(ENABLE_JEMALLOC "Use JeMalloc instead of glibc malloc for speedup" ON)
-option(ENABLE_STATIC_STDLIBCXX "Compile everything statically for protable binaries" ON)
+option(ENABLE_STATIC_STDLIBCXX "Compile everything statically for protable binaries" OFF)
 
 if (ENABLE_SANITIZER)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
