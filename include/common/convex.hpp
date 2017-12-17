@@ -2,6 +2,7 @@
 #define CHARGE_COMMON_CONVEX_HPP
 
 #include <algorithm>
+#include <limits>
 
 namespace charge::common {
 template <typename Iter> Iter find_last_convex(const Iter begin, const Iter end) {

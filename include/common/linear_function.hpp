@@ -4,6 +4,7 @@
 #include "common/function_traits.hpp"
 
 #include <tuple>
+#include <limits>
 
 namespace charge {
 namespace common {

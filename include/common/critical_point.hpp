@@ -5,6 +5,8 @@
 #include "common/hyperbolic_function.hpp"
 #include "common/linear_function.hpp"
 
+#include <limits>
+
 namespace charge::common {
 
 // Compute the inflection point of the difference between lhs and rhs

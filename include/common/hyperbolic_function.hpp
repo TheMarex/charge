@@ -6,6 +6,7 @@
 #include <tuple>
 #include <cmath>
 #include <cassert>
+#include <limits>
 
 namespace charge {
 namespace common {

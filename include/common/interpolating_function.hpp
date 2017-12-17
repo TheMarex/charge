@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <limits>
 
 namespace charge::common {
 
