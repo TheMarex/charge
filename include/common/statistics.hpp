@@ -3,8 +3,6 @@
 
 #include "common/irange.hpp"
 
-#include <tbb/enumerable_thread_specific.h>
-
 #include <array>
 #include <atomic>
 #include <string>
