@@ -1,5 +1,9 @@
 language: cpp
 
+cache:
+  yarn: true
+  ccache: true
+
 matrix:
   include:
     - os: linux
@@ -11,6 +15,7 @@ matrix:
           packages:
             - clang-5.0
             - libboost-all-dev
+            - ccache
       env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Debug
     - os: linux
       compiler: 'clang-5.0-release'
@@ -21,6 +26,7 @@ matrix:
           packages:
             - clang-5.0
             - libboost-all-dev
+            - ccache
       env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Release
 
 install:
@@ -29,6 +35,9 @@ install:
     - pushd build
     - cmake .. -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
     - cmake --build .
+    - popd
+    - pushd frontend
+    - yarn
     - popd
 
 script:
