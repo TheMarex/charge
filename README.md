@@ -64,7 +64,7 @@ mkdir -p data/graphs
 wget http://download.geofabrik.de/europe/switzerland-latest.osm.pbf -O data/graphs/switzerland.osm.pbf
 mkdir -p data/srtm
 ./scripts/srtm_download.py 5,45,11,48 ./data/srtm
-DATASET=switzerland make run
+CAPACITY=32000 DATASET=switzerland make run
 ```
 
 ### Frontend
@@ -78,4 +78,8 @@ cd frontend
 npm install
 npm run start
 ```
+
+### API Documentation
+
+See [the full HTTP API dpcumentation](docs/API.md).
 
