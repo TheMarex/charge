@@ -16,6 +16,7 @@ matrix:
             - clang-5.0
             - libboost-all-dev
             - ccache
+            - libstdc++-6-dev
       env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Debug
     - os: linux
       compiler: 'clang-5.0-release'
@@ -27,6 +28,7 @@ matrix:
             - clang-5.0
             - libboost-all-dev
             - ccache
+            - libstdc++-6-dev
       env: CCOMPILER=clang-5.0 CXXCOMPILER=clang++-5.0 BUILD_TYPE=Release
 
 install:
