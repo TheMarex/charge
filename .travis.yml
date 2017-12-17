@@ -12,7 +12,9 @@ matrix:
         apt:
           sources:
             - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
           packages:
+            - g++-7
             - clang-5.0
             - libboost-all-dev
             - ccache
@@ -24,7 +26,9 @@ matrix:
         apt:
           sources:
             - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
           packages:
+            - g++-7
             - clang-5.0
             - libboost-all-dev
             - ccache
