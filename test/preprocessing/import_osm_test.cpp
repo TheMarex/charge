@@ -40,15 +40,15 @@ TEST_CASE("Simplify OSM data", "[osm]") {
     //           7
 
     OSMNetwork network{{
-                           {0, 1, {13, 26}},
-                           {1, 0, {26, 72}},
-                           {1, 2, {13, 26}},
-                           {2, 1, {26, 72}},
-                           {2, 3, {13, 13}},
-                           {3, 4, {13, 13}},
-                           {4, 5, {13, 26}},
-                           {6, 2, {13, 26}},
-                           {7, 6, {13, 13}},
+                           {0, 1, {13, 26, false}},
+                           {1, 0, {26, 72, false}},
+                           {1, 2, {13, 26, false}},
+                           {2, 1, {26, 72, false}},
+                           {2, 3, {13, 13, false}},
+                           {3, 4, {13, 13, false}},
+                           {4, 5, {13, 26, false}},
+                           {6, 2, {13, 26, false}},
+                           {7, 6, {13, 13, false}},
                        },
                        {{0, common::Coordinate::from_floating(0.0, 0.0)},
                         {1, common::Coordinate::from_floating(1.0, 0.0)},
@@ -60,12 +60,12 @@ TEST_CASE("Simplify OSM data", "[osm]") {
                         {1, common::Coordinate::from_floating(2.0, -2.0)}}};
 
     OSMNetwork reference{{
-                           {0, 1, {13, 26}},
-                           {1, 0, {26, 72}},
-                           {1, 2, {13, 13}},
-                           {2, 3, {13, 26}},
-                           {4, 1, {13, 26}},
-                           {5, 4, {13, 13}},
+                           {0, 1, {13, 26, false}},
+                           {1, 0, {26, 72, false}},
+                           {1, 2, {13, 13, false}},
+                           {2, 3, {13, 26, false}},
+                           {4, 1, {13, 26, false}},
+                           {5, 4, {13, 13, false}},
                        },
                        {{0, common::Coordinate::from_floating(0.0, 0.0)},
                         {3, common::Coordinate::from_floating(2.0, 0.0)},
@@ -94,14 +94,14 @@ TEST_CASE("Remove small component from OSM data", "[osm]") {
     //           7
 
     OSMNetwork network{{
-                           {0, 1, {13, 26}},
-                           {1, 0, {26, 72}},
-                           {1, 2, {13, 26}},
-                           {2, 1, {26, 72}},
-                           {3, 4, {13, 13}},
-                           {4, 5, {13, 26}},
-                           {6, 2, {13, 26}},
-                           {7, 6, {13, 13}},
+                           {0, 1, {13, 26, false}},
+                           {1, 0, {26, 72, false}},
+                           {1, 2, {13, 26, false}},
+                           {2, 1, {26, 72, false}},
+                           {3, 4, {13, 13, false}},
+                           {4, 5, {13, 26, false}},
+                           {6, 2, {13, 26, false}},
+                           {7, 6, {13, 13, false}},
                        },
                        {{0, common::Coordinate::from_floating(0.0, 0.0)},
                         {1, common::Coordinate::from_floating(1.0, 0.0)},
@@ -113,10 +113,10 @@ TEST_CASE("Remove small component from OSM data", "[osm]") {
                         {1, common::Coordinate::from_floating(2.0, -2.0)}}};
 
     OSMNetwork reference{{
-                           {0, 1, {13, 26}},
-                           {1, 0, {26, 72}},
-                           {2, 1, {13, 26}},
-                           {3, 2, {13, 13}},
+                           {0, 1, {13, 26, false}},
+                           {1, 0, {26, 72, false}},
+                           {2, 1, {13, 26, false}},
+                           {3, 2, {13, 13, false}},
                        },
                        {{0, common::Coordinate::from_floating(0.0, 0.0)},
                         {3, common::Coordinate::from_floating(2.0, 0.0)},

@@ -355,7 +355,7 @@ inline auto simplify_network(OSMNetwork network, std::size_t small_component_siz
                     auto uphill = (network.nodes[from].height <= network.nodes[via].height &&
                                    network.nodes[via].height <= network.nodes[to].height);
                     bool forward_compatible = graph.weight(from_edge) == graph.weight(to_edge);
-                    bool forward_is_tunnel = graph.weight(from_edge).is_tunnel == graph.weight(to_edge).is_tunnel;
+                    bool forward_is_tunnel = graph.weight(from_edge).is_tunnel && graph.weight(to_edge).is_tunnel;
 
                     if (forward_is_tunnel || (forward_compatible && (downhill || uphill))) {
                         auto backward_from_edge = graph.edge(via, from);
@@ -377,7 +377,7 @@ inline auto simplify_network(OSMNetwork network, std::size_t small_component_siz
                                  backward_to_edge != common::INVALID_ID) {
                             bool backward_compatible =
                                 graph.weight(backward_from_edge) == graph.weight(backward_to_edge);
-                            bool backward_is_tunnel = graph.weight(backward_from_edge).is_tunnel == graph.weight(backward_to_edge).is_tunnel;
+                            bool backward_is_tunnel = graph.weight(backward_from_edge).is_tunnel && graph.weight(backward_to_edge).is_tunnel;
 
                             if ((forward_is_tunnel && backward_is_tunnel) || backward_compatible) {
                                 auto forward_weight = graph.weight(from_edge);
