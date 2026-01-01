@@ -317,7 +317,7 @@ TEST_CASE("Regression test 2 combining hyperbolic functions", "[minimize combine
 
     auto & [ delta_first, h_first ] = *first;
     auto & [ delta_second, h_second ] = *second;
-    auto & [ delta_third, h_third ] = *third;
+    // Removed invalid dereference of empty optional 'third'
 
     CHECK(h_first(9.1545) == Approx(f(6) + g(3.15443468)));
     CHECK(h_first(10.785) == Approx(f(6 + (4 - 3.15443468)) + g(4)).epsilon(0.05));
