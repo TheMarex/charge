@@ -4,113 +4,113 @@
 #include "server/charge.hpp"
 #include "server/to_json.hpp"
 
-#include <web++.hpp>
+#include <httplib.hpp>
 
 #include <optional>
+#include <sstream>
 #include <thread>
 
 namespace charge::server {
 namespace detail {
 
-inline void error(WPP::Response *res, const std::string &msg) {
-    res->body << "{\"error\":\"" << msg << "\"}";
-    res->code = 400;
+inline void error(httplib::Response &res, const std::string &msg) {
+    std::ostringstream ss;
+    ss << "{\"error\":\"" << msg << "\"}";
+    res.set_content(ss.str(), "application/json");
+    res.status = 400;
 }
 
 template <typename T>
-std::optional<T> param(WPP::Request *req, WPP::Response *res, const std::string &name,
+std::optional<T> param(const httplib::Request &req, httplib::Response &res, const std::string &name,
                        bool optional = false);
 
 template <>
-inline std::optional<std::string> param<std::string>(WPP::Request *req, WPP::Response *res,
+inline std::optional<std::string> param<std::string>(const httplib::Request &req, httplib::Response &res,
                                                      const std::string &name, bool optional) {
-    auto iter = req->query.find(name);
-    if (iter == req->query.end()) {
+    if (!req.has_param(name)) {
         if (!optional)
             error(res, "Parameter not found: " + name);
         return {};
     }
 
-    return iter->second;
+    return req.get_param_value(name);
 }
 
 template <>
-inline std::optional<bool> param<bool>(WPP::Request *req, WPP::Response *res,
+inline std::optional<bool> param<bool>(const httplib::Request &req, httplib::Response &res,
                                                      const std::string &name, bool optional) {
-    auto iter = req->query.find(name);
-    if (iter == req->query.end()) {
+    if (!req.has_param(name)) {
         if (!optional)
             error(res, "Parameter not found: " + name);
         return {};
     }
 
-    if (iter->second == "true")
+    auto value = req.get_param_value(name);
+    if (value == "true")
         return true;
-    else if (iter->second == "false")
+    else if (value == "false")
         return false;
     else
     {
-        error(res, "Parameter has invalid value: " + name + " = " + iter->second);
+        error(res, "Parameter has invalid value: " + name + " = " + value);
         return {};
     }
 }
 
 template <>
-inline std::optional<int> param<int>(WPP::Request *req, WPP::Response *res, const std::string &name,
+inline std::optional<int> param<int>(const httplib::Request &req, httplib::Response &res, const std::string &name,
                                      bool optional) {
-    auto iter = req->query.find(name);
-    if (iter == req->query.end()) {
+    if (!req.has_param(name)) {
         if (!optional)
             error(res, "Parameter not found: " + name);
         return {};
     }
 
-    return std::stoi(iter->second);
+    return std::stoi(req.get_param_value(name));
 }
 
 template <>
 inline std::optional<Charge::Algorithm>
-param<Charge::Algorithm>(WPP::Request *req, WPP::Response *res, const std::string &name,
+param<Charge::Algorithm>(const httplib::Request &req, httplib::Response &res, const std::string &name,
                          bool optional) {
-    auto iter = req->query.find(name);
-    if (iter == req->query.end()) {
+    if (!req.has_param(name)) {
         if (!optional)
             error(res, "Parameter not found: " + name);
         return {};
     }
 
-    if (iter->second == "fastest_bi_dijkstra") {
+    auto value = req.get_param_value(name);
+    if (value == "fastest_bi_dijkstra") {
         return Charge::Algorithm::FASTEST_BI_DIJKSTRA;
-    } else if (iter->second == "mc_dijkstra") {
+    } else if (value == "mc_dijkstra") {
         return Charge::Algorithm::MC_DIJKSTRA;
-    } else if (iter->second == "mcc_dijkstra") {
+    } else if (value == "mcc_dijkstra") {
         return Charge::Algorithm::MCC_DIJKSTRA;
-    } else if (iter->second == "fp_dijkstra") {
+    } else if (value == "fp_dijkstra") {
         return Charge::Algorithm::FP_DIJKSTRA;
-    } else if (iter->second == "fpc_dijkstra") {
+    } else if (value == "fpc_dijkstra") {
         return Charge::Algorithm::FPC_DIJKSTRA;
-    } else if (iter->second == "fpc_profile_dijkstra") {
+    } else if (value == "fpc_profile_dijkstra") {
         return Charge::Algorithm::FPC_PROFILE_DIJKSTRA;
     }
 
-    error(res, "Unknown algorithm: " + iter->second);
+    error(res, "Unknown algorithm: " + value);
     return {};
 }
 
 template <>
-inline std::optional<double> param<double>(WPP::Request *req, WPP::Response *res,
+inline std::optional<double> param<double>(const httplib::Request &req, httplib::Response &res,
                                            const std::string &name, bool optional) {
-    auto iter = req->query.find(name);
-    if (iter == req->query.end()) {
+    if (!req.has_param(name)) {
         if (!optional)
             error(res, "Parameter not found: " + name);
         return {};
     }
 
-    return std::stof(iter->second);
+    return std::stof(req.get_param_value(name));
 }
 
-inline void handle_route(const Charge &charge, WPP::Request *req, WPP::Response *res) {
+inline void handle_route(const Charge &charge, const httplib::Request &req, httplib::Response &res) {
     auto algorithm = param<Charge::Algorithm>(req, res, "algorithm");
     auto start = param<int>(req, res, "start");
     auto target = param<int>(req, res, "target");
@@ -125,49 +125,55 @@ inline void handle_route(const Charge &charge, WPP::Request *req, WPP::Response 
     if (routes.empty()) {
         error(res, "No route found.");
     } else {
-        res->body << to_json(*start, *target, routes);
+        std::ostringstream ss;
+        ss << to_json(*start, *target, routes);
+        res.set_content(ss.str(), "application/json");
     }
 }
 
-inline void handle_nearest(const Charge &charge, WPP::Request *req, WPP::Response *res) {
+inline void handle_nearest(const Charge &charge, const httplib::Request &req, httplib::Response &res) {
     auto lat = param<double>(req, res, "lat");
     auto lon = param<double>(req, res, "lon");
     if (!lat || !lon)
         return;
 
     auto nearest = charge.nearest(common::Coordinate::from_floating(*lon, *lat));
-    res->body << to_json(nearest);
+    std::ostringstream ss;
+    ss << to_json(nearest);
+    res.set_content(ss.str(), "application/json");
 }
 } // namespace detail
 
 class HTTPServer {
   public:
     HTTPServer(const Charge &charge, unsigned port) {
-        server.get("/route", [&](WPP::Request *req, WPP::Response *res) {
+        server.Get("/route", [&](const httplib::Request &req, httplib::Response &res) {
             detail::handle_route(charge, req, res);
         });
-        server.get("/nearest", [&](WPP::Request *req, WPP::Response *res) {
+        server.Get("/nearest", [&](const httplib::Request &req, httplib::Response &res) {
             detail::handle_nearest(charge, req, res);
         });
 
         worker_thread = std::thread([this, port]() {
-            try {
-                server.start(port);
-            } catch (WPP::Exception e) {
-                std::cerr << "WebServer: " << e.what() << std::endl;
-            }
+            server.listen("0.0.0.0", port);
         });
+    }
+
+    ~HTTPServer() {
+      stop();
     }
 
     void stop() {
         server.stop();
-        worker_thread.join();
+        if (worker_thread.joinable()) {
+            worker_thread.join();
+        }
     }
 
     void wait() { worker_thread.join(); }
 
   private:
-    WPP::Server server;
+    httplib::Server server;
     std::thread worker_thread;
 };
 } // namespace charge::server

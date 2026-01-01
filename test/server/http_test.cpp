@@ -6,77 +6,29 @@
 #include "ev/limited_tradeoff_function.hpp"
 
 #include <catch.hpp>
+#include <httplib.hpp>
 
 #include <algorithm>
 #include <thread>
 #include <vector>
 
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
 using namespace charge;
 using namespace charge::server;
 
-std::string tcp_send_data(const std::string &hostname, int portno,
-                          const std::string &data) {
-    int sockfd, n;
-    struct sockaddr_in serveraddr;
-    struct hostent *server;
-
-    std::string buffer(1024 * 4, '\0');
-
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        throw std::runtime_error("Error opening socket");
-    }
-
-    server = gethostbyname(hostname.c_str());
-    if (server == NULL) {
-        throw std::runtime_error("Error no such host");
-    }
-
-    bzero((char *)&serveraddr, sizeof(serveraddr));
-    serveraddr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr, (char *)&serveraddr.sin_addr.s_addr,
-          server->h_length);
-    serveraddr.sin_port = htons(portno);
-
-    if (connect(sockfd, reinterpret_cast<sockaddr *>(&serveraddr),
-                sizeof(serveraddr)) < 0) {
-        throw std::runtime_error("Error connecting");
-    }
-
-    auto writen_length = write(sockfd, data.c_str(), data.size());
-    if (writen_length < 0) {
-        throw std::runtime_error("Error writing data");
-    }
-    assert(writen_length == data.size());
-
-    auto response_length = read(sockfd, buffer.data(), buffer.size());
-    if (response_length < 0) {
-        throw std::runtime_error("Error reading response");
-    }
-    buffer.resize(response_length);
-    close(sockfd);
-
-    return buffer;
-}
-
 std::string http_send_get(const std::string &hostname, int portno,
                           const std::string &url) {
-    std::string get_request =
-        "GET " + url + " HTTP/1.1\r\nHost: " + hostname + "\r\n";
-
-    auto response = tcp_send_data(hostname, portno, get_request);
-
-    std::string expected_header = "HTTP/1.1 200 OK";
-    if (response.substr(0, expected_header.size()) == expected_header) {
-        throw std::runtime_error("Unexpected response: " + response);
+    httplib::Client client(hostname, portno);
+    auto result = client.Get(url);
+    
+    if (!result) {
+        throw std::runtime_error("HTTP request failed");
     }
-    auto body_begin = response.find("\r\n\r\n");
-    return response.substr(body_begin + 4);
+    
+    if (result->status != 200) {
+        throw std::runtime_error("Unexpected response status: " + std::to_string(result->status));
+    }
+    
+    return result->body;
 }
 
 TEST_CASE("Start http server", "[HTTP]") {
@@ -163,7 +115,7 @@ TEST_CASE("Start http server", "[HTTP]") {
     const Charge charge(base, 16000.0f);
     HTTPServer server(charge, 5000);
 
-    usleep(10000);
+    usleep(800000);
 
     std::vector<std::string> results(queries.size());
     std::transform(queries.begin(), queries.end(), results.begin(),
