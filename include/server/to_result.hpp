@@ -27,7 +27,7 @@ inline void annotate_coordinates(RouteResult &route,
 inline void annotate_lengths(RouteResult &route) {
     double length = 0;
     route.lengths.push_back(0);
-    std::adjacent_find(route.geometry.begin(), route.geometry.end(),
+    (void) std::adjacent_find(route.geometry.begin(), route.geometry.end(),
                        [&length, &route](const auto &lhs, const auto &rhs) {
                            length += common::haversine_distance(lhs, rhs);
                            route.lengths.push_back(length);

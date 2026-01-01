@@ -348,7 +348,7 @@ auto find_undominated_range(const RangeIter lhs_range_begin, const RangeIter lhs
     auto end_iter = rhs_end;
 
     // Find maximal prefix, front to back
-    std::find_if(lhs_range_begin, lhs_range_end, [&](const auto &lhs) {
+    (void) std::find_if(lhs_range_begin, lhs_range_end, [&](const auto &lhs) {
         begin_iter = find_first_undominated(lhs.begin(), lhs.end(), begin_iter, end_iter, x_epsilon,
                                             y_epsilon);
 
@@ -363,7 +363,7 @@ auto find_undominated_range(const RangeIter lhs_range_begin, const RangeIter lhs
     auto lhs_range_rend = std::make_reverse_iterator(lhs_range_begin);
     assert(std::distance(lhs_range_rbegin, lhs_range_rend) ==
            std::distance(lhs_range_begin, lhs_range_end));
-    std::find_if(lhs_range_rbegin, lhs_range_rend, [&](const auto &lhs) {
+    (void) std::find_if(lhs_range_rbegin, lhs_range_rend, [&](const auto &lhs) {
         end_iter = find_last_undominated(lhs.begin(), lhs.end(), begin_iter, end_iter, x_epsilon,
                                          y_epsilon);
 

@@ -8,6 +8,8 @@
 #include "common/roots.hpp"
 
 #include <algorithm>
+#include <array>
+#include <optional>
 
 namespace charge::common {
 

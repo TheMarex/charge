@@ -132,6 +132,8 @@ struct PiecewieseFunction {
         {
             std::runtime_error("Can't invert a non-monotone function.");
         }
+
+        return std::numeric_limits<double>::signaling_NaN();
         // clang-format on
     }
 
