@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.14)
 project(charge C CXX)
 
 option(ENABLE_SANITIZER "Use memory sanitizer for Debug build" OFF)
@@ -14,19 +14,32 @@ if (ENABLE_SANITIZER)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -fsanitize=address")
 endif()
 if (ENABLE_STATISTICS)
-    add_definitions(-DCHARGE_ENABLE_STATISTICS)
+    add_compile_definitions(CHARGE_ENABLE_STATISTICS)
 endif()
 if (ENABLE_MEMORY_STATISTICS)
-    add_definitions(-DCHARGE_ENABLE_MEMORY_STATISTICS)
+    add_compile_definitions(CHARGE_ENABLE_MEMORY_STATISTICS)
 endif()
 if (ENABLE_STATIC_STDLIBCXX)
-    add_definitions(-static-libstdc++ -static-libgcc)
+    add_link_options(-static-libstdc++ -static-libgcc)
 endif()
 
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-include_directories(BEFORE SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/include)
-add_definitions(-std=c++17 -fdiagnostics-color=always -DTEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test")
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Set up include directories as an interface library
+add_library(charge_includes INTERFACE)
+target_include_directories(charge_includes INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/
+)
+target_include_directories(charge_includes SYSTEM INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party
+    ${CMAKE_CURRENT_SOURCE_DIR}/third_party/libosmium/include
+)
+
+# Add compile options and definitions
+add_compile_options(-fdiagnostics-color=always)
+add_compile_definitions(TEST_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -61,33 +74,45 @@ endif()
 message(STATUS "Using libraries ${DEFAULT_LIBRARIES}")
 
 add_executable(osm2graph src/preprocessing/osm2graph.cpp)
-add_executable(geojson2charger src/preprocessing/geojson2charger.cpp)
-add_executable(graph2turngraph src/preprocessing/graph2turngraph.cpp)
+target_link_libraries(osm2graph PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
-target_link_libraries(osm2graph ${DEFAULT_LIBRARIES})
+add_executable(geojson2charger src/preprocessing/geojson2charger.cpp)
+target_link_libraries(geojson2charger PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
+add_executable(graph2turngraph src/preprocessing/graph2turngraph.cpp)
+target_link_libraries(graph2turngraph PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_library(STATISTICS OBJECT src/common/statistics.cpp)
+target_link_libraries(STATISTICS PRIVATE charge_includes)
 add_library(SIGNALS OBJECT src/common/signal_handler.cpp)
+target_link_libraries(SIGNALS PRIVATE charge_includes)
 add_library(OPTIONS OBJECT src/common/options.cpp)
+target_link_libraries(OPTIONS PRIVATE charge_includes)
 
 
 add_executable(dijkstra_experiment src/experiments/dijkstra.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(dijkstra_experiment ${DEFAULT_LIBRARIES})
+target_link_libraries(dijkstra_experiment PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(mc_dijkstra_experiment src/experiments/mc_dijkstra.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(mc_dijkstra_experiment ${DEFAULT_LIBRARIES})
+target_link_libraries(mc_dijkstra_experiment PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(mcc_dijkstra_experiment src/experiments/mcc_dijkstra.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(mcc_dijkstra_experiment ${DEFAULT_LIBRARIES})
+target_link_libraries(mcc_dijkstra_experiment PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(fp_dijkstra_experiment src/experiments/fp_dijkstra.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(fp_dijkstra_experiment ${DEFAULT_LIBRARIES})
+target_link_libraries(fp_dijkstra_experiment PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(fpc_dijkstra_experiment src/experiments/fpc_dijkstra.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(fpc_dijkstra_experiment ${DEFAULT_LIBRARIES})
+target_link_libraries(fpc_dijkstra_experiment PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(generate_queries src/experiments/generate_queries.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(generate_queries ${DEFAULT_LIBRARIES})
+target_link_libraries(generate_queries PRIVATE charge_includes ${DEFAULT_LIBRARIES})
+
 add_executable(generate_ranks src/experiments/generate_ranks.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS> $<TARGET_OBJECTS:SIGNALS>)
-target_link_libraries(generate_ranks ${DEFAULT_LIBRARIES})
+target_link_libraries(generate_ranks PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_executable(routed src/server/charge.cpp src/server/routed.cpp $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS>)
-target_link_libraries(routed ${DEFAULT_LIBRARIES})
+target_link_libraries(routed PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 # Tests
 add_executable(common_tests
@@ -117,7 +142,7 @@ add_executable(common_tests
     test/common/nearest_neighbour_test.cpp
     test/common/common.cpp
     $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS>)
-target_link_libraries (common_tests ${DEFAULT_LIBRARIES})
+target_link_libraries (common_tests PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_executable(server_tests
     src/server/charge.cpp
@@ -125,7 +150,7 @@ add_executable(server_tests
     test/server/http_test.cpp
     test/server/server.cpp
     $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS>)
-target_link_libraries (server_tests ${DEFAULT_LIBRARIES})
+target_link_libraries (server_tests PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_executable(ev_tests
     test/ev/ev.cpp
@@ -134,13 +159,13 @@ add_executable(ev_tests
     test/ev/node_potential_test.cpp
     test/ev/charging_model_test.cpp
     $<TARGET_OBJECTS:STATISTICS> $<TARGET_OBJECTS:OPTIONS>)
-target_link_libraries (ev_tests ${DEFAULT_LIBRARIES})
+target_link_libraries (ev_tests PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_executable(preprocessing_tests
     test/preprocessing/import_osm_test.cpp
     test/preprocessing/srtm_test.cpp
     test/preprocessing/preprocessing.cpp)
-target_link_libraries (preprocessing_tests ${DEFAULT_LIBRARIES})
+target_link_libraries (preprocessing_tests PRIVATE charge_includes ${DEFAULT_LIBRARIES})
 
 add_custom_target(tests DEPENDS
     common_tests
